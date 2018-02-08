@@ -1,11 +1,15 @@
-The geo data is maintained in a Postgres database table. Postgres has excellent geographical options when the PostGIS extension is installed.
+The data is stored in a Postgres 9.3 database. This database can be created by importing the dump in the bp_areas.tar file.
+Note that the PostGIS extension must be enabled!
 
-In order to create a dump, issue the following statements:
+
+When creating a csv dump to be imported in the NDS, proceed as follows:
+
+1. First recreate the geojson column. We need to delete repeating points as they will trip ElasticSearch:
 
 UPDATE bp_areas
 SET geojson = CAST(ST_AsGeoJSON(ST_MakeValid(ST_RemoveRepeatedPoints(ST_GeomFromGeoJSON(ST_AsGeoJSON(the_geom,9))))) AS JSON);
 
-The data can be exported using the following query, wrapped in a COPY () TO STDOUT WITH CSV HEADER statement:
+2. The data can be exported using the following query, wrapped in a COPY () TO STDOUT WITH CSV HEADER statement:
 
 SELECT 
 	gid, 
@@ -25,4 +29,5 @@ SELECT
 	locality_nl
 FROM bp_areas;
 
-Alternatively, the database can be loaded in PgAdmin 4. Use the bp_areas.tar file in this repo to load the data.
+
+
