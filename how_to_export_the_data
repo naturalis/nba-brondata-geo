@@ -1,0 +1,28 @@
+The geo data is maintained in a Postgres database table. Postgres has excellent geographical options when the PostGIS extension is installed.
+
+In order to create a dump, issue the following statements:
+
+UPDATE bp_areas
+SET geojson = CAST(ST_AsGeoJSON(ST_MakeValid(ST_RemoveRepeatedPoints(ST_GeomFromGeoJSON(ST_AsGeoJSON(the_geom,9))))) AS JSON);
+
+The data can be exported using the following query, wrapped in a COPY () TO STDOUT WITH CSV HEADER statement:
+
+SELECT 
+	gid, 
+	CASE 
+		WHEN 
+			type = 'Nature' 
+		THEN 
+			CONCAT(locality, ' (',  source, ')') 
+		ELSE
+			locality 
+	END 
+		AS locality,
+	geojson,
+	iso,
+	source,
+	type,
+	locality_nl
+FROM bp_areas;
+
+Alternatively, the database can be loaded in PgAdmin 4. Use the bp_areas.tar file in this repo to load the data.
